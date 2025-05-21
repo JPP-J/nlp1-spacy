@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: nlp1_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - ENVIRONMENT=development
+      - SPACY_MODEL=en_core_web_sm
+    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload 
+

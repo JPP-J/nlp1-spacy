@@ -1,0 +1,21 @@
+classDiagram
+    class CustomSpacy {
+        +__init__(text1, text2:str=None, mode:str=None, model)
+        +check_pipline()
+        +check_mode()
+        +set_pol_sub()
+        +nlp_task()
+        +classify_sentiment()
+    }
+    CustomSpacy : -model
+    CustomSpacy : -nlp
+    CustomSpacy : -text1
+    CustomSpacy : -text2
+    CustomSpacy : -mode
+    CustomSpacy : -doc
+    CustomSpacy : -list_modes
+    CustomSpacy : -result
+    CustomSpacy : -sentiment
+    CustomSpacy : -subject
+    CustomSpacy : +get_polarity(doc)
+    CustomSpacy : +get_subjectivity(doc)
