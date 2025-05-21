@@ -4,7 +4,7 @@ from enum import Enum
 class ModeEnum(str, Enum):
     sentiment = "SENTIMENT"
     ner = "NER"
-    token = "TOKEN"
+    token = "token"
     pos = "POS"
     dep = "DEP"
     lemma = "LEMMA"

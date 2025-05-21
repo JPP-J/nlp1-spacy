@@ -80,7 +80,7 @@ class CustomSpacy():
             self.result = [sent for sent in doc1.is_sentenced]
         elif self.mode == 'SIM':
             similarity = doc1.similarity(doc2)
-            self.esult = similarity
+            self.result = similarity
         elif self.mode == 'SENTIMENT':
             self.set_pol_sub()
             self.result = {
