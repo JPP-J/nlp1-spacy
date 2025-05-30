@@ -1,0 +1,151 @@
+name: Utility - Manage ECS Configuration
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'copy-task-definition'
+        type: choice
+        options:
+          - copy-task-definition
+          - update-task-definition
+          - backup-service-config
+          - restart-service
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}  # Update to match your AWS region
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}  # Update to match your ECR repo name
+  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}  # Update to match your ECS cluster name
+  ECS_SERVICE: ${{ secrets.ECS_SERVICE }} # Update to match your ECS service name
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}  # Update to match your AWS account ID
+  AWS_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  manage-ecs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    
+    - name: Copy current task definition from ECS
+      if: ${{ github.event.inputs.action == 'copy-task-definition' }}
+      run: |
+        echo "📋 Copying current task definition from ECS service..."
+        
+        # Get the current task definition ARN from the service
+        TASK_DEF_ARN=$(aws ecs describe-services \
+          --cluster ${{ env.ECS_CLUSTER }} \
+          --services ${{ env.ECS_SERVICE }} \
+          --query 'services[0].taskDefinition' \
+          --output text)
+        
+        echo "Current task definition: $TASK_DEF_ARN"
+        
+        # Download and format the task definition
+        aws ecs describe-task-definition \
+          --task-definition $TASK_DEF_ARN \
+          --query taskDefinition > raw-task-def.json
+        
+        # Clean up for re-registration (remove read-only fields)
+        cat raw-task-def.json | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .registeredAt, .registeredBy, .compatibilities)' > task-definition.json
+        
+        echo "✅ Task definition saved to task-definition.json"
+        echo "Task definition preview:"
+        cat task-definition.json | jq '{family: .family, cpu: .cpu, memory: .memory, containerCount: (.containerDefinitions | length)}'
+    
+    - name: Update task definition in repository
+      if: ${{ github.event.inputs.action == 'update-task-definition' }}
+      run: |
+        echo "📝 Updating task definition with latest ECR image..."
+        
+        # Get latest image from ECR
+        LATEST_IMAGE=$(aws ecr describe-images \
+          --repository-name ${{ env.ECR_REPOSITORY }} \
+          --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' \
+          --output text)
+        
+        if [ "$LATEST_IMAGE" != "None" ] && [ "$LATEST_IMAGE" != "null" ]; then
+          FULL_IMAGE_URI="${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:$LATEST_IMAGE"
+          
+          # Update the image in task definition
+          cat task-definition.json | jq --arg image "$FULL_IMAGE_URI" \
+            '(.containerDefinitions[] | select(.name == "fastapi-app") | .image) = $image' \
+            > updated-task-definition.json
+          
+          mv updated-task-definition.json task-definition.json
+          echo "✅ Updated task definition with image: $FULL_IMAGE_URI"
+        else
+          echo "❌ No images found in ECR repository"
+          exit 1
+        fi
+    
+    - name: Backup service configuration
+      if: ${{ github.event.inputs.action == 'backup-service-config' }}
+      run: |
+        echo "💾 Backing up ECS service configuration..."
+        
+        # Create backup with timestamp
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        mkdir -p backups
+        
+        # Backup service configuration
+        aws ecs describe-services \
+          --cluster ${{ env.ECS_CLUSTER }} \
+          --services ${{ env.ECS_SERVICE }} \
+          > backups/service-config-$TIMESTAMP.json
+        
+        # Backup current task definition
+        TASK_DEF_ARN=$(aws ecs describe-services \
+          --cluster ${{ env.ECS_CLUSTER }} \
+          --services ${{ env.ECS_SERVICE }} \
+          --query 'services[0].taskDefinition' \
+          --output text)
+        
+        aws ecs describe-task-definition \
+          --task-definition $TASK_DEF_ARN \
+          > backups/task-definition-$TIMESTAMP.json
+        
+        echo "✅ Backup saved to backups/ directory"
+        ls -la backups/
+    
+    - name: Restart ECS service
+      if: ${{ github.event.inputs.action == 'restart-service' }}
+      run: |
+        echo "🔄 Restarting ECS service..."
+        
+        # Force new deployment (restart service)
+        aws ecs update-service \
+          --cluster ${{ env.ECS_CLUSTER }} \
+          --service ${{ env.ECS_SERVICE }} \
+          --force-new-deployment
+        
+        echo "✅ Service restart initiated"
+        echo "Monitor deployment status in AWS Console or use AWS CLI:"
+        echo "aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services ${{ env.ECS_SERVICE }}"
+    
+    - name: Commit changes to repository
+      if: ${{ github.event.inputs.action == 'copy-task-definition' || github.event.inputs.action == 'update-task-definition' || github.event.inputs.action == 'backup-service-config' }}
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "chore: update ECS configuration files [skip ci]"
+        file_pattern: "task-definition.json backups/*.json"
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+    
+    - name: Summary
+      run: |
+        echo "🎯 Action completed: ${{ github.event.inputs.action }}"
+        echo "Cluster: ${{ env.ECS_CLUSTER }}"
+        echo "Service: ${{ env.ECS_SERVICE }}"
+        echo "Region: ${{ env.AWS_REGION }}"

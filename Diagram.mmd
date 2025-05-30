@@ -1,0 +1,153 @@
+flowchart TD
+ subgraph subGraph0["Phase 1: Initial AWS Infrastructure Setup (One-time)"]
+        A2["Create Internet Gateway"]
+        A1["Create VPC & Subnets"]
+        A3["Create Route Tables"]
+        A4["Create Security Groups"]
+        A5["Create Application Load Balancer"]
+        A6["Create Target Group"]
+        A7["Create ECR Repository"]
+        A8["Create ECS Cluster"]
+        A9["Create IAM Roles"]
+        A10["Create CloudWatch Log Group"]
+  end
+ subgraph subGraph1["Phase 2: Task Definition & Service Setup"]
+        B2["Build Placeholder Image"]
+        B1["Create task-definition.json"]
+        B3["Push Placeholder to ECR"]
+        B4["Register Task Definition"]
+        B5["Create ECS Service with ALB"]
+        B6["Configure Auto Scaling"]
+  end
+ subgraph subGraph2["Phase 3: GitHub Actions Setup"]
+        C2["Create deploy.yml workflow"]
+        C1["Set GitHub Secrets"]
+        C3["Create ci.yml workflow"]
+        C4["Test GitHub Actions"]
+  end
+ subgraph subGraph3["Phase 4: CI/CD Process (Automated)"]
+        D2{"Branch Check"}
+        D1["Developer Push Code"]
+        D3["GitHub Actions Trigger"]
+        D4["Run CI Tests Only"]
+        D5["Checkout Code"]
+        D6["Setup Python & Install Dependencies"]
+        D7["Run Tests & Linting"]
+        D8{"Tests Pass?"}
+        D9["❌ Stop Deployment"]
+        D10["Configure AWS Credentials"]
+        D11["Login to ECR"]
+        D12["Build Docker Image"]
+        D13["Tag with Git SHA"]
+        D14["Push to ECR"]
+        D15["Update Task Definition JSON"]
+        D16["Register New Task Definition"]
+        D17["Update ECS Service"]
+        D18["Wait for Service Stability"]
+        D19["Health Check via ALB"]
+        D20["✅ Deployment Complete"]
+  end
+ subgraph subGraph4["Detailed AWS Components"]
+        E1["VPC: 10.0.0.0/16"]
+        E2["Public Subnet 1: 10.0.1.0/24"]
+        E3["Public Subnet 2: 10.0.2.0/24"]
+        E4["Private Subnet 1: 10.0.3.0/24"]
+        E5["Private Subnet 2: 10.0.4.0/24"]
+        F1["ALB Security Group: Port 80/443"]
+        F2["ECS Security Group: Port 8000"]
+        F3["Application Load Balancer"]
+        F4["Target Group: HTTP:8000"]
+        F5["Listener: HTTP:80 → Target Group"]
+        G1["ECR Repository: fastapi-app"]
+        G2["ECS Cluster: fastapi-cluster"]
+        G3["ECS Service: fastapi-service"]
+        G4["Fargate Tasks: 1-10 instances"]
+        H1["ecsTaskExecutionRole"]
+        H2["ecsTaskRole"]
+        H3["CloudWatch Log Group: /ecs/fastapi-task"]
+        H4["Auto Scaling Target"]
+        H5["Auto Scaling Policy"]
+  end
+ subgraph subGraph5["GitHub Repository Structure"]
+        I1["main.py - FastAPI app"]
+        I2["requirements.txt"]
+        I3["Dockerfile"]
+        I4["task-definition.json"]
+        I5[".github/workflows/deploy.yml"]
+        I6[".github/workflows/ci.yml"]
+        I7[".dockerignore"]
+        I8["tests/"]
+  end
+ subgraph subGraph6["Traffic Flow"]
+        J2["Application Load Balancer"]
+        J1["Internet Users"]
+        J3["Target Group Health Check"]
+        J4["Fargate Tasks: Port 8000"]
+        J5["FastAPI Application"]
+  end
+    A1 --> A2
+    A2 --> A3
+    A3 --> A4
+    A4 --> A5 & F1 & F2
+    A5 --> A6 & F3
+    A6 --> A7 & F4
+    A7 --> A8 & G1
+    A8 --> A9 & G2
+    A9 --> A10 & H1 & H2
+    B1 --> B2
+    B2 --> B3
+    B3 --> B4
+    B4 --> B5
+    B5 --> B6 & G3
+    C1 --> C2
+    C2 --> C3
+    C3 --> C4
+    D1 --> D2
+    D2 -- main --> D3
+    D2 -- other --> D4
+    D3 --> D5
+    D5 --> D6
+    D6 --> D7
+    D7 --> D8
+    D8 -- No --> D9
+    D8 -- Yes --> D10
+    D10 --> D11
+    D11 --> D12
+    D12 --> D13
+    D13 --> D14
+    D14 --> D15 & G1
+    D15 --> D16
+    D16 --> D17
+    D17 --> D18 & G3
+    D18 --> D19
+    D19 --> D20
+    J1 --> J2
+    J2 --> J3
+    J3 --> J4
+    J4 --> J5
+    A10 --> B1 & H3
+    B6 --> C1 & H4
+    C4 --> D1
+    F3 --> F5 & J2
+    G3 --> G4
+    H4 --> H5
+    F4 --> J3
+    G4 --> J4
+    style A1 fill:#fff3e0
+    style A10 fill:#fff3e0
+    style B1 fill:#e3f2fd
+    style B6 fill:#e3f2fd
+    style C1 fill:#f3e5f5
+    style C4 fill:#f3e5f5
+    style D1 fill:#e8f5e8
+    style D9 fill:#ffcdd2
+    style D20 fill:#c8e6c9
+    style E1 fill:#e1f5fe
+    style F3 fill:#e1f5fe
+    style G2 fill:#e1f5fe
+    style H1 fill:#e1f5fe
+    style subGraph0 fill:#FFF9C4
+    style subGraph4 fill:#FFF9C4
+    style subGraph1 fill:#FFF9C4
+    style subGraph2 fill:#C8E6C9
+    style subGraph3 fill:#C8E6C9
