@@ -8,6 +8,10 @@ router = APIRouter()
 async def root():
     return {"message": "Welcome to the NLP API!"}
 
+@router.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
 @router.post("/modes")
 async def get_modes():
     spacy_model = CustomSpacy(text1=None,  mode="NER", model="en_core_web_sm")

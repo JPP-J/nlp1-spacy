@@ -47,6 +47,16 @@ jobs:
         # Verify the replacements
         echo "Task definition after replacements:"
         cat task-definition.json
+
+    # - name: Prepare task definition
+    #   run: |
+    #     export FAMILY_NAME="${{ env.FAMILY_NAME }}"
+    #     export CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
+    #     export ACCOUNT_ID="${{ env.ACCOUNT_ID }}"
+    #     export REGION="${{ env.AWS_REGION }}"
+    #     export PROJECT_NAME="${{ env.PROJECT_NAME }}"
+    #     envsubst < task-definition.json > task-definition-temp.json
+    #     mv task-definition-temp.json task-definition.json
    
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
