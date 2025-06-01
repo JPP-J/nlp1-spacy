@@ -9,7 +9,7 @@ on:
 env:
   SPACY_MODEL: en_core_web_sm
   PYTHON_VERSION: "3.11"
-  ECR_REPOSITORY: fastapi-app
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
 jobs:
   test:
