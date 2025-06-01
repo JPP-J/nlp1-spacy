@@ -15,13 +15,10 @@ on:
           - restart-service
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}  # Update to match your AWS region
-  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}  # Update to match your ECR repo name
-  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}  # Update to match your ECS cluster name
-  ECS_SERVICE: ${{ secrets.ECS_SERVICE }} # Update to match your ECS service name
-  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}  # Update to match your AWS account ID
-  AWS_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  AWS_REGION: us-east-1  # Update to match your AWS region
+  ECR_REPOSITORY: fastapi-app  # Update to match your ECR repo name
+  ECS_CLUSTER: fastapi-cluster  # Update to match your ECS cluster name
+  ECS_SERVICE: fastapi-service  # Update to match your ECS service name
 
 jobs:
   manage-ecs:
@@ -34,8 +31,8 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
     
     - name: Copy current task definition from ECS
@@ -76,7 +73,7 @@ jobs:
           --output text)
         
         if [ "$LATEST_IMAGE" != "None" ] && [ "$LATEST_IMAGE" != "null" ]; then
-          FULL_IMAGE_URI="${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:$LATEST_IMAGE"
+          FULL_IMAGE_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:$LATEST_IMAGE"
           
           # Update the image in task definition
           cat task-definition.json | jq --arg image "$FULL_IMAGE_URI" \
@@ -85,6 +82,9 @@ jobs:
           
           mv updated-task-definition.json task-definition.json
           echo "✅ Updated task definition with image: $FULL_IMAGE_URI"
+          
+          # Output updated image info using new syntax
+          echo "updated-image=$FULL_IMAGE_URI" >> $GITHUB_OUTPUT
         else
           echo "❌ No images found in ECR repository"
           exit 1
@@ -141,7 +141,7 @@ jobs:
         commit_message: "chore: update ECS configuration files [skip ci]"
         file_pattern: "task-definition.json backups/*.json"
       env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Summary
       run: |

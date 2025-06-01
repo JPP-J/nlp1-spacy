@@ -1,0 +1,23 @@
+├── app/
+│   ├──__init__.py
+│   ├── routes.py         # API route definitions
+│   ├── models.py         # Pydantic models 
+│   └── main.py       
+├── utils/
+│   ├── _init__.py
+│   └── nlp_utils.py      # Your utility logic (e.g., OCR, text processing, etc.)
+├── tests/
+|   └── test_routes.py
+├── .github/
+│   └── workflows/
+|       ├── deploy.yml
+|       ├── utility.yml
+│       └── ci.yml
+├── AWS/
+│   ├── ....
+main.py               # Entrypoint to create and run FastAPI app
+requirements.txt
+README.md
+Dockerfile
+docker-compose.yml
+.gitignore
