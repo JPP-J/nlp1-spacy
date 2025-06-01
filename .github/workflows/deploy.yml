@@ -13,6 +13,7 @@ env:
   CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
   FAMILY_NAME: ${{ secrets.FAMILY_NAME }}
   ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+  PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
 
 jobs:
   deploy:
@@ -41,6 +42,7 @@ jobs:
         sed -i "s/\${CONTAINER_NAME}/${{ env.CONTAINER_NAME }}/g" task-definition.json
         sed -i "s/\${ACCOUNT_ID}/${{ env.ACCOUNT_ID }}/g" task-definition.json
         sed -i "s/\${REGION}/${{ env.AWS_REGION }}/g" task-definition.json
+        sed -i "s/\${PROJECT_NAME}/${{ env.PROJECT_NAME }}/g" task-definition.json
 
         # Verify the replacements
         echo "Task definition after replacements:"
