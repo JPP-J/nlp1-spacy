@@ -22,14 +22,18 @@ async def get_pipelines():
 
 @router.post("/process")
 async def analyze(data: TextInput):
-    spacy_model = CustomSpacy(text1=data.text1, text2=data.text2, mode=data.mode, model="en_core_web_sm")
-    result = spacy_model.nlp_task()
+    try:
+        spacy_model = CustomSpacy(text1=data.text1, text2=data.text2, mode=data.mode, model="en_core_web_sm")
+        result = spacy_model.nlp_task()
 
-    if data.mode.upper() == "SENTIMENT":
-        classification = spacy_model.classify_sentiment()
-        return {"mode": data.mode, "result": classification}
+        if data.mode and data.mode.upper() == "SENTIMENT":
+            classification = spacy_model.classify_sentiment()
+            return {"mode": data.mode, "result": classification}
 
-    return {"mode": data.mode, "result": result}
+        return {"mode": data.mode, "result": result}
+    except Exception as e:
+        return {"error": str(e)}
+
 
 
 
