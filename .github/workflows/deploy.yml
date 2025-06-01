@@ -38,11 +38,11 @@ jobs:
         
     - name: Prepare task definition
       run: |
-        sed -i "s/\${FAMILY_NAME}/${{ env.FAMILY_NAME }}/g" task-definition.json
-        sed -i "s/\${CONTAINER_NAME}/${{ env.CONTAINER_NAME }}/g" task-definition.json
-        sed -i "s/\${ACCOUNT_ID}/${{ env.ACCOUNT_ID }}/g" task-definition.json
-        sed -i "s/\${REGION}/${{ env.AWS_REGION }}/g" task-definition.json
-        sed -i "s/\${PROJECT_NAME}/${{ env.PROJECT_NAME }}/g" task-definition.json
+        sed -i "s#\${FAMILY_NAME}#${{ env.FAMILY_NAME }}#g" task-definition.json
+        sed -i "s#\${CONTAINER_NAME}#${{ env.CONTAINER_NAME }}#g" task-definition.json
+        sed -i "s#\${ACCOUNT_ID}#${{ env.ACCOUNT_ID }}#g" task-definition.json
+        sed -i "s#\${REGION}#${{ env.AWS_REGION }}#g" task-definition.json
+        sed -i "s#\${PROJECT_NAME}#${{ env.PROJECT_NAME }}#g" task-definition.json
 
         # Verify the replacements
         echo "Task definition after replacements:"
