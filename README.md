@@ -1,4 +1,6 @@
 # NLP-SpaCy Project
+![Last Commit](https://img.shields.io/github/last-commit/JPP-J/nlp1-spacy?style=flat-square)
+![Languages](https://img.shields.io/github/languages/count/JPP-J/nlp1-spacy?style=flat-square)
 
 This repo is home to the code that accompanies Jidapa's *NLP-SpaCy Project*:
 
