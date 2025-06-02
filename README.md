@@ -47,4 +47,4 @@ This project supports containerized deployment using AWS ECS Fargate with an App
 3. **Deploy** the image on ECS Fargate service behind an ALB  
 4. **Automate** deployment via GitHub Actions
 
-**Example demo**:  [demo](https://github.com/JPP-J/nlp1-spacy/blob/448ef6ccb229174748875beeef2191be77417dff/example_demo.ipynb)
+**Example demo**:  [demo](example_demo.ipynb)
